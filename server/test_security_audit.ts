@@ -102,7 +102,7 @@ export async function runSecurityAudit() {
   const isWrongPwd = verifyPassword('WrongPassword!', hash, salt);
   record(
     'AUTHENTICATION',
-    'PBKDF2 Password Hashing',
+    'Bcrypt Password Hashing (Cost 12)',
     isValidPwd && !isWrongPwd,
     `Password verified with salt (${salt.slice(0, 8)}...), wrong password rejected.`
   );

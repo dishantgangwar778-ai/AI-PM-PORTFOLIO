@@ -1,4 +1,9 @@
 import { z } from 'zod';
+import { sanitizeHtml } from './auth_middleware';
+
+const sanitizedString = (max: number) => z.string().trim().max(max).transform(val => sanitizeHtml(val));
+const sanitizedOptionalString = (max: number) => z.string().trim().max(max).optional().transform(val => val ? sanitizeHtml(val) : val);
+
 
 // ============================================================================
 // RETURNIQ SECURITY & REQUEST VALIDATION SCHEMAS
@@ -54,10 +59,10 @@ export const CreateActionSchema = z.object({
   productId: z.string().optional(),
   productSku: z.string().optional(),
   title: z.string().trim().min(1, 'Action title is required').max(300),
-  description: z.string().max(2000).optional(),
-  problem: z.string().max(2000).optional(),
-  evidence: z.string().max(2000).optional(),
-  recommendation: z.string().max(2000).optional(),
+  description: sanitizedOptionalString(2000),
+  problem: sanitizedOptionalString(2000),
+  evidence: sanitizedOptionalString(2000),
+  recommendation: sanitizedOptionalString(2000),
   expectedImpact: z.enum(['High', 'Medium', 'Low']).optional(),
   estimatedSavingsPerWeek: z.number().nonnegative().optional(),
   effort: z.enum(['High', 'Medium', 'Low']).optional(),
@@ -70,26 +75,26 @@ export const CreateActionSchema = z.object({
 
 export const UpdateActionSchema = z.object({
   title: z.string().trim().min(1).max(300).optional(),
-  description: z.string().max(2000).optional(),
+  description: sanitizedOptionalString(2000),
   status: z.enum(['Not Started', 'In Progress', 'Blocked', 'Completed', 'Rejected']).optional(),
   owner: z.string().max(100).optional(),
   priority: z.enum(['P0 - CRITICAL', 'P1 - HIGH', 'P2 - MEDIUM', 'P3 - LOW']).optional(),
   expectedImpact: z.enum(['High', 'Medium', 'Low']).optional(),
   effort: z.enum(['High', 'Medium', 'Low']).optional(),
-  recommendation: z.string().max(2000).optional(),
+  recommendation: sanitizedOptionalString(2000),
 }).passthrough();
 
 // Experiments
 export const CreateExperimentSchema = z.object({
   title: z.string().trim().min(1, 'Title is required').max(300),
-  description: z.string().max(2000).optional(),
+  description: sanitizedOptionalString(2000),
   actionId: z.string().optional(),
   status: z.enum(['Proposed', 'Running', 'Completed', 'Paused', 'Archived']).optional().default('Proposed'),
   primaryMetric: z.string().max(100).optional().default('Return Rate Reduction'),
   secondaryMetrics: z.array(z.string()).optional(),
   audience: z.string().max(255).optional(),
   durationDays: z.number().int().positive().max(365).optional().default(30),
-  hypothesis: z.string().max(2000).optional(),
+  hypothesis: sanitizedOptionalString(2000),
   controlGroup: z.object({
     name: z.string().max(100),
     description: z.string().max(500),
@@ -139,11 +144,11 @@ export const ReviewReturnSchema = z.object({
 
 // AI Classifications
 export const AiClassifySchema = z.object({
-  text: z.string().trim().min(1, 'Text input required').max(5000),
+  text: z.string().trim().min(1, 'Text input required').max(5000).transform(val => sanitizeHtml(val)),
 });
 
 export const AiBatchClassifySchema = z.object({
-  texts: z.array(z.string().trim().min(1).max(5000)).min(1).max(500, 'Batch size limit is 500 items'),
+  texts: z.array(z.string().trim().min(1).max(5000).transform(val => sanitizeHtml(val))).min(1).max(500, 'Batch size limit is 500 items'),
 });
 
 export const AiRootCauseSchema = z.object({
@@ -151,6 +156,6 @@ export const AiRootCauseSchema = z.object({
   productName: z.string().max(200).optional(),
   category: z.string().max(100).optional(),
   topReason: z.string().max(100).optional(),
-  sampleComments: z.array(z.string().max(2000)).max(100).optional(),
+  sampleComments: z.array(z.string().max(2000).transform(val => sanitizeHtml(val))).max(100).optional(),
   returnRate: z.number().min(0).max(100).optional(),
 });

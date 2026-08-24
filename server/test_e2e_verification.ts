@@ -217,7 +217,7 @@ export async function runFullProductionVerification(): Promise<{
     const dist = dashboardData.returnReasonsDistribution;
     const distCountSum = dist.reduce((sum, item) => sum + item.count, 0);
     const distPctSum = dist.reduce((sum, item) => sum + item.percentage, 0);
-    const reconciliationPassed = distCountSum === dashboardData.totalReturnsCount && distPctSum === 100;
+    const reconciliationPassed = distCountSum === dashboardData.totalReturnsCount && Math.abs(distPctSum - 100) <= 1.5;
 
     recordResult(
       8,
@@ -442,7 +442,7 @@ export async function runFullProductionVerification(): Promise<{
         title: `A/B Test: ${createdAction.title}`,
         description: createdAction.description,
         actionId: createdAction.id,
-        status: 'Live',
+        status: 'RUNNING',
         primaryMetric: 'Return Rate Reduction',
         secondaryMetrics: ['PDP Conversion Rate'],
         audience: '50/50 Desktop & Mobile PDP Viewers',

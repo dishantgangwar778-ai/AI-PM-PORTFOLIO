@@ -1,3 +1,4 @@
+import rateLimit from 'express-rate-limit';
 import { Router, Request, Response } from 'express';
 import { db } from './db';
 import {
@@ -37,7 +38,36 @@ import {
   AiRootCauseSchema,
 } from './security_schemas';
 
+
+// ============================================================================
+// FIX 02: RATE LIMITING & BRUTE-FORCE PROTECTION
+// ============================================================================
+const apiLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 20, // Limit each IP to 20 requests per windowMs
+  message: { error: 'Too many requests, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => req.ip as string,
+  validate: { xForwardedForHeader: false, default: true }
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // 5 failed attempts locks for 15 mins
+  message: { error: 'Incorrect email or password' }, // Generic response (FIX 04)
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true, // Only count failed attempts for lock
+  keyGenerator: (req) => req.ip as string,
+  validate: { xForwardedForHeader: false, default: true }
+});
+
 const router = Router();
+
+// Apply general rate limit to all /api routes
+router.use(apiLimiter);
+
 
 // ============================================================================
 // AUTHENTICATION ENDPOINTS
@@ -49,17 +79,12 @@ router.post('/auth/register', validateBody(RegisterSchema), (req: Request, res: 
   res.status(201).json({ user, token: user.token, workspace });
 });
 
-router.post('/auth/login', validateBody(LoginSchema), (req: Request, res: Response) => {
+router.post('/auth/login', authLimiter, validateBody(LoginSchema), (req: Request, res: Response) => {
   const { email, password } = req.body;
   const user = db.loginUser(email, password);
   if (!user) {
-    return res.status(401).json({
-      error: 'Invalid Credentials',
-      whatHappened: 'Authentication failed for the provided email and password.',
-      why: 'No account found with matching credentials.',
-      whatNext: 'Check your email address or password and try again.',
-    });
-  }
+      return res.status(401).json({ error: 'Incorrect email or password' });
+    }
   const workspace = db.getCurrentWorkspace(user.activeWorkspaceId);
   res.json({ user, token: user.token, workspace });
 });
@@ -68,6 +93,17 @@ router.get('/auth/me', optionalAuth, (req: Request, res: Response) => {
   const user = req.user ? db.sanitizeUser(req.user) : db.sanitizeUser(db.getCurrentUser());
   const workspace = db.getCurrentWorkspace(user.activeWorkspaceId);
   res.json({ user, workspace });
+});
+
+
+router.put('/auth/onboarding', requireAuth, (req: Request, res: Response) => {
+  const { step } = req.body;
+  if (!step || typeof step !== 'number' || step < 1 || step > 5) {
+    return res.status(400).json({ error: 'Invalid step' });
+  }
+  const updatedUser = db.updateOnboarding(req.user!.id, step);
+  if (!updatedUser) return res.status(404).json({ error: 'User not found' });
+  res.json({ success: true, user: updatedUser });
 });
 
 router.post('/auth/logout', (_req: Request, res: Response) => {
@@ -599,7 +635,7 @@ router.post('/actions/:id/convert-experiment', optionalAuth, requireWorkspaceAcc
       title: title ? sanitizeHtml(title) : `A/B Validation: ${action.title}`,
       description: action.description || action.recommendation,
       actionId: action.id,
-      status: 'Proposed',
+      status: 'PROPOSED',
       primaryMetric: 'Return Rate Reduction',
       secondaryMetrics: ['PDP Conversion Rate', 'Repeat Purchase Rate'],
       audience: 'All desktop & mobile traffic viewing product PDP (50/50 split)',

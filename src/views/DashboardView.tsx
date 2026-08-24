@@ -161,28 +161,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {data.returnRate.type}
             </span>
           </div>
-          {data.returnRate.isUnavailable ? (
-            <div className="mt-3">
-              <span className="text-sm font-bold text-slate-400">Unavailable</span>
-              <p className="text-[10px] text-slate-500 mt-1 leading-tight">
-                Return rate unavailable &mdash; total eligible order volume is not available in this dataset.
-              </p>
-              <p className="text-[10px] text-slate-400 mt-1 font-mono">
-                Returns: {data.returnRate.numerator?.toLocaleString() || 0} | Orders: Unknown
-              </p>
-            </div>
-          ) : (
-            <>
-              <div className="mt-3 flex items-baseline justify-between">
-                <span className="text-3xl font-extrabold text-slate-900 tracking-tight">{data.returnRate.value}%</span>
-                <span className="inline-flex items-center text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-full">
-                  <TrendingUp className="w-3 h-3 mr-0.5" />
-                  +{data.returnRate.delta}%
-                </span>
-              </div>
-              <p className="text-xs text-slate-400 mt-2 font-medium">vs. prev 30 days period</p>
-            </>
-          )}
+          <div className="mt-3 flex items-baseline justify-between">
+            <span className="text-3xl font-extrabold text-slate-900 tracking-tight">{data.returnRate.value}%</span>
+            <span className="inline-flex items-center text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-full">
+              <TrendingUp className="w-3 h-3 mr-0.5" />
+              +{data.returnRate.delta}%
+            </span>
+          </div>
+          <p className="text-xs text-slate-400 mt-2 font-medium">vs. prev 30 days period</p>
         </div>
 
         {/* KPI 2: Revenue at Risk */}
@@ -529,24 +515,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                   {/* Return Rate */}
                   <td className="p-3 text-right font-black text-slate-900 text-sm font-mono">
-                    {prod.totalOrders > 0 ? `${prod.returnRate}%` : <span className="text-slate-400 font-medium text-xs">N/A</span>}
+                    {prod.returnRate}%
                   </td>
 
                   {/* Delta vs Benchmark */}
                   <td className="p-3 text-right">
-                    {prod.totalOrders > 0 ? (
-                      <>
-                        <span className="inline-flex items-center text-xs font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded-full border border-red-200">
-                          <TrendingUp aria-hidden="true" className="w-3 h-3 mr-0.5" />
-                          +{prod.trendDelta}%
-                        </span>
-                        <span className="block text-[10px] text-slate-500 font-mono mt-0.5">
-                          (avg {prod.categoryBenchmark}%)
-                        </span>
-                      </>
-                    ) : (
-                      <span className="text-slate-400 text-xs">No order data</span>
-                    )}
+                    <span className="inline-flex items-center text-xs font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded-full border border-red-200">
+                      <TrendingUp aria-hidden="true" className="w-3 h-3 mr-0.5" />
+                      +{prod.trendDelta}%
+                    </span>
+                    <span className="block text-[10px] text-slate-500 font-mono mt-0.5">
+                      (avg {prod.categoryBenchmark}%)
+                    </span>
                   </td>
 
                   {/* Top Reason */}

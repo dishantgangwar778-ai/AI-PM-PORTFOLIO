@@ -203,23 +203,14 @@ export const ProductDeepDiveView: React.FC<ProductDeepDiveViewProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
           <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Current Return Rate</span>
-          {product.totalOrders > 0 ? (
-            <>
-              <div className="mt-2 flex items-baseline justify-between">
-                <span className="text-3xl font-black text-slate-900 font-mono">{product.returnRate}%</span>
-                <span className="inline-flex items-center text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-full border border-red-100">
-                  <TrendingUp className="w-3 h-3 mr-0.5" />
-                  vs {product.categoryBenchmark}% Cat Avg
-                </span>
-              </div>
-              <p className="text-xs text-slate-400 mt-2 font-medium">Excess return rate: +{product.trendDelta}%</p>
-            </>
-          ) : (
-            <div className="mt-2">
-              <span className="text-sm font-bold text-slate-400">N/A</span>
-              <p className="text-[10px] text-slate-400 mt-1">No order volume data available.</p>
-            </div>
-          )}
+          <div className="mt-2 flex items-baseline justify-between">
+            <span className="text-3xl font-black text-slate-900 font-mono">{product.returnRate}%</span>
+            <span className="inline-flex items-center text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-full border border-red-100">
+              <TrendingUp className="w-3 h-3 mr-0.5" />
+              vs {product.categoryBenchmark}% Cat Avg
+            </span>
+          </div>
+          <p className="text-xs text-slate-400 mt-2 font-medium">Excess return rate: +{product.trendDelta}%</p>
         </div>
 
         <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">

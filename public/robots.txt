@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Exclude auth-gated/admin/api routes
+Disallow: /api/
+Disallow: /admin/
+Disallow: /settings/
+Disallow: /dashboard/
+
+Sitemap: https://app.returniq.com/sitemap.xml

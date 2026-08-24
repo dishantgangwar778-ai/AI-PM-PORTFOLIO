@@ -22,7 +22,15 @@ export type EvidenceClassificationType =
 
 export type ActionStatus = 'Not Started' | 'In Progress' | 'Blocked' | 'Completed' | 'Rejected';
 
-export type ExperimentStatus = 'Proposed' | 'Live' | 'Running' | 'Paused' | 'Completed';
+export type ExperimentStatus = 'PROPOSED' | 'RUNNING' | 'PAUSED' | 'COMPLETED';
+
+export const getLiveExperimentsCount = (experiments: Experiment[]): number => {
+  return experiments.filter((exp) => exp.status === 'RUNNING').length;
+};
+
+export const getActiveExperimentsCount = (experiments: Experiment[]): number => {
+  return experiments.filter((exp) => exp.status === 'RUNNING' || exp.status === 'PAUSED').length;
+};
 
 export interface UserProfile {
   id: string;
@@ -251,12 +259,9 @@ export interface DashboardData {
   timeframe: string;
   categoryFilter: string;
   returnRate: {
-    value: number | null; // 14.2% or null if unavailable
-    delta: number | null; // +1.2%
-    type: 'Observed Data' | EvidenceClassificationType | 'Unavailable';
-    isUnavailable?: boolean;
-    numerator?: number;
-    denominator?: number;
+    value: number; // e.g. 14.2%
+    delta: number; // +1.2%
+    type: 'Observed Data' | EvidenceClassificationType;
   };
   revenueAtRisk: {
     value: number; // 124000

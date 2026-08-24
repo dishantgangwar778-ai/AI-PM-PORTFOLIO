@@ -14,6 +14,8 @@ import {
   Zap,
 } from 'lucide-react';
 
+import { Experiment, getLiveExperimentsCount } from '../types';
+
 interface SidebarProps {
   currentView: string;
   setCurrentView?: (view: string) => void;
@@ -21,6 +23,7 @@ interface SidebarProps {
   onOpenUploadWizard?: () => void;
   onOpenHelpModal?: () => void;
   totalReturnsCount?: number;
+  experiments?: Experiment[];
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -29,6 +32,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onViewChange,
   onOpenUploadWizard,
   totalReturnsCount,
+  experiments,
 }) => {
   const handleViewChange = (viewId: string) => {
     if (setCurrentView) setCurrentView(viewId);
@@ -74,7 +78,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       id: 'experiments',
       label: 'Experiment Center',
       icon: FlaskConical,
-      badge: '3 Live',
+      badge: experiments && getLiveExperimentsCount(experiments) > 0 ? `${getLiveExperimentsCount(experiments)} Live` : null,
       description: 'A/B Intervention Tracking',
     },
     {

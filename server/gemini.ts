@@ -72,11 +72,23 @@ export async function classifyReturnReasonWithGemini(
     try {
       const geminiPromise = client.models.generateContent({
         model: DEFAULT_AI_MODEL,
-        contents: `You are ReturnIQ's Return Reason Classification Agent.
-Analyze this e-commerce customer return feedback and classify it into standard e-commerce return taxonomy.
-Categories MUST be strictly one of: ${RETURN_CATEGORIES.map((c) => `"${c}"`).join(', ')}.
-Ground your decision strictly in the text provided. Do not hallucinate defect details not present in the customer text.
+        contents: `You are an expert e-commerce return classification engine. Analyze the incoming return payload: {reason, comment, product, category}.
 
+CLASSIFICATION RULES:
+1. RULE OF PRIORITY: Check for Fulfillment Errors FIRST. If the 'reason' field contains explicit fulfillment failure intent (e.g., "Wrong item received", "Incorrect item"), you MUST classify the return as "Wrong Item" / "Fulfillment/Shipping".
+2. CONTEXT DISAMBIGUATION: Color words (e.g., "black", "blue") or size numbers inside 'comment' describe the fulfillment error context when paired with a "Wrong item" reason. DO NOT classify these records under "Color" or "Size/Fit".
+3. Assign a confidence score between 0.00 and 1.00 based on keyword alignment.
+
+OUTPUT FORMAT (JSON):
+{
+  "category": "<Size/Fit Customer Fulfillment/Shipping Preference Quality/Defect |>",
+  "subcategory": "<Extracted issue primary>",
+  "confidence": <float>,
+  "sentiment": "<Negative|Neutral|Positive>",
+  "explanation": "<Brief explanation>"
+}
+
+Payload:
 ${combinedText}`,
         config: {
           responseMimeType: 'application/json',
@@ -110,7 +122,7 @@ ${combinedText}`,
       });
 
       const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Gemini classification timeout')), 3500)
+        setTimeout(() => reject(new Error('Gemini classification timeout')), 10000)
       );
 
       const response = await Promise.race([geminiPromise, timeoutPromise]);
@@ -155,6 +167,7 @@ ${combinedText}`,
  */
 export function ruleBasedClassify(reason: string, comment: string = ''): ClassificationResult {
   const text = `${reason} ${comment}`.toLowerCase().trim();
+  const reasonText = reason.toLowerCase().trim();
 
   if (!text || text === 'none') {
     return {
@@ -162,264 +175,50 @@ export function ruleBasedClassify(reason: string, comment: string = ''): Classif
       subcategory: 'Unspecified',
       sentiment: 'Neutral',
       confidence: 0.5,
-      explanation: 'Insufficient evidence: No customer comments or return reason provided.',
+      explanation: 'Insufficient evidence',
       isInsufficientEvidence: true,
       needsHumanReview: true,
     };
   }
 
-  // Ambiguous check
-  if (text.includes('meh') || text.includes('not for me') || (text.includes('did not work') && !text.includes('small') && !text.includes('defect'))) {
-    return {
-      category: 'Customer Preference',
-      subcategory: 'General Return',
-      sentiment: 'Neutral',
-      confidence: 0.72,
-      explanation: 'General subjective customer preference return with ambiguous sentiment.',
-      needsHumanReview: false,
-    };
+  // LEVEL 1: EXPLICIT FULFILLMENT & WRONG ITEM
+  const level1Keywords = [
+    "wrong item received", "wrong size sent", "incorrect item", 
+    "sent wrong color", "missing item", "late delivery", "package damaged in transit",
+    "wrong item", "received wrong", "ordered", "shipped me", "different item"
+  ];
+  if (level1Keywords.some(kw => reasonText.includes(kw) || text.includes(kw))) {
+    return { category: 'Wrong Item', subcategory: 'Fulfillment Error', sentiment: 'Negative', confidence: 0.97, explanation: 'Warehouse fulfillment picking or packing SKU error.' };
   }
 
-  // Transit Damage / Logistics check first to prevent accidental classification into Quality
-  if (
-    text.includes('crushed') ||
-    text.includes('smashed') ||
-    text.includes('damaged in transit') ||
-    text.includes('damaged during shipping') ||
-    text.includes('broken in transit') ||
-    text.includes('box arrived damaged') ||
-    text.includes('cracked in mail')
-  ) {
-    return {
-      category: 'Damage',
-      subcategory: 'In-Transit Damage',
-      sentiment: 'Negative',
-      confidence: 0.96,
-      explanation: 'Item damaged during logistics courier transit.',
-    };
+  // LEVEL 2: PRODUCT DEFECT & QUALITY
+  const level2ReasonKeywords = ["sole peeling", "broken zipper", "fabric tearing", "stitching unraveling", "defective"];
+  const level2CommentKeywords = ["broke", "tore", "ripped", "separated", "damaged", "snapped", "tear", "broken", "stitch", "defect", "rip", "button", "zipper", "fell apart", "detached"];
+  if (level2ReasonKeywords.some(kw => reasonText.includes(kw)) || level2CommentKeywords.some(kw => text.includes(kw))) {
+    return { category: 'Quality', subcategory: 'Manufacturing Defect', sentiment: 'Negative', confidence: 0.95, explanation: 'Physical quality flaw or component separation reported.' };
   }
 
-  // Quality / Defect
-  if (
-    text.includes('sole') ||
-    text.includes('snapped') ||
-    text.includes('tear') ||
-    text.includes('broken') ||
-    text.includes('stitch') ||
-    text.includes('defect') ||
-    text.includes('rip') ||
-    text.includes('button') ||
-    text.includes('zipper') ||
-    text.includes('fell apart') ||
-    text.includes('detached')
-  ) {
-    return {
-      category: 'Quality',
-      subcategory: 'Manufacturing Defect',
-      sentiment: 'Negative',
-      confidence: 0.95,
-      explanation: 'Physical quality flaw or component separation reported.',
-    };
+  // LEVEL 3: SIZE & FIT
+  const level3ReasonKeywords = ["too small", "too large", "tight waist", "shoulders too tight", "runs small", "inseam too short", "runs large", "size down", "size up", "fit", "sizing", "tight"];
+  const level3CommentKeywords = ["could not button", "cannot raise arms", "need size up", "too tight", "cant even zip up", "cannot button", "loose", "baggy", "wide", "huge", "small"];
+  if (level3ReasonKeywords.some(kw => reasonText.includes(kw)) || level3CommentKeywords.some(kw => text.includes(kw))) {
+    return { category: 'Size/Fit', subcategory: 'Sizing Issue', sentiment: 'Negative', confidence: 0.96, explanation: 'Garment or footwear dimensions run tighter or larger than expectation.' };
   }
 
-  if (
-    text.includes('cheap') ||
-    text.includes('fabric') ||
-    text.includes('material') ||
-    text.includes('thin') ||
-    text.includes('flimsy') ||
-    text.includes('rough') ||
-    text.includes('scratchy') ||
-    text.includes('see-through')
-  ) {
-    return {
-      category: 'Quality',
-      subcategory: 'Material Quality',
-      sentiment: 'Negative',
-      confidence: 0.93,
-      explanation: 'Customer dissatisfaction with fabric texture, thickness, or material feel.',
-    };
+  // LEVEL 4: COLOR & CUSTOMER PREFERENCE
+  const level4Keywords = ["changed mind", "buyer remorse", "color looks different", "style doesn't suit", "color", "colour", "shade", "not for me", "did not work", "picture", "photo", "different"];
+  if (level4Keywords.some(kw => text.includes(kw))) {
+    return { category: 'Color', subcategory: 'Customer Preference', sentiment: 'Neutral', confidence: 0.85, explanation: 'General subjective customer preference or color mismatch.' };
   }
 
-  // 6. Typo & Spanglish-aware Size/Fit detection
-  const isSizeSmall =
-    text.includes('too small') ||
-    text.includes('too tite') ||
-    text.includes('tite') ||
-    text.includes('tight') ||
-    text.includes('narrow') ||
-    text.includes('squeeze') ||
-    text.includes('short') ||
-    text.includes('size up') ||
-    text.includes('runs small') ||
-    text.includes('runss very smal') ||
-    text.includes('smal') ||
-    text.includes('pequeño') ||
-    text.includes('cant even zip up') ||
-    text.includes('cannot button') ||
-    text.includes('waisst');
-
-  if (isSizeSmall) {
-    return {
-      category: 'Size/Fit',
-      subcategory: 'Too Small',
-      sentiment: 'Negative',
-      confidence: 0.96,
-      explanation: 'Garment or footwear dimensions run tighter or smaller than customer expectation.',
-    };
+  // Fallback transit damage
+  if (text.includes('crushed') || text.includes('smashed') || text.includes('box')) {
+    return { category: 'Damage', subcategory: 'In-Transit Damage', sentiment: 'Negative', confidence: 0.94, explanation: 'Packaging or item damage occurring during logistics transit.' };
   }
 
-  const isSizeLarge =
-    text.includes('too large') ||
-    text.includes('too big') ||
-    text.includes('loose') ||
-    text.includes('baggy') ||
-    text.includes('wide') ||
-    text.includes('long') ||
-    text.includes('huge') ||
-    text.includes('size down') ||
-    text.includes('runs large') ||
-    text.includes('demasiado grande') ||
-    text.includes('muy grande') ||
-    text.includes('fits like an xl');
-
-  if (isSizeLarge) {
-    return {
-      category: 'Size/Fit',
-      subcategory: 'Too Large',
-      sentiment: 'Negative',
-      confidence: 0.95,
-      explanation: 'Item cut or volume exceeds standard size guide proportions.',
-    };
-  }
-
-  if (
-    text.includes('fit') ||
-    text.includes('chart') ||
-    text.includes('measurement') ||
-    text.includes('cut') ||
-    text.includes('proportions') ||
-    text.includes('sizing')
-  ) {
-    return {
-      category: 'Size/Fit',
-      subcategory: 'Poor Fit / Sizing Issue',
-      sentiment: 'Negative',
-      confidence: 0.89,
-      explanation: 'General fitting or proportion discrepancy against sizing guidelines.',
-    };
-  }
-
-  // Color / Appearance
-  if (
-    text.includes('color') ||
-    text.includes('colour') ||
-    text.includes('shade') ||
-    text.includes('navy') ||
-    text.includes('cyan') ||
-    text.includes('emerald') ||
-    text.includes('green') ||
-    text.includes('blue') ||
-    text.includes('red') ||
-    text.includes('yellow') ||
-    text.includes('look') ||
-    text.includes('picture') ||
-    text.includes('photo') ||
-    text.includes('different') ||
-    text.includes('not as shown') ||
-    text.includes('website looked')
-  ) {
-    return {
-      category: 'Color',
-      subcategory: 'Color / Appearance Mismatch',
-      sentiment: 'Negative',
-      confidence: 0.92,
-      explanation: 'Discrepancy between online product imagery and physical unit color.',
-    };
-  }
-
-  // Transit Damage
-  if (
-    text.includes('damage') ||
-    text.includes('crushed') ||
-    text.includes('smashed') ||
-    text.includes('box') ||
-    text.includes('scratched') ||
-    text.includes('dented') ||
-    text.includes('transit')
-  ) {
-    return {
-      category: 'Damage',
-      subcategory: 'In-Transit Damage',
-      sentiment: 'Negative',
-      confidence: 0.94,
-      explanation: 'Packaging or item damage occurring during logistics transit.',
-    };
-  }
-
-  // Wrong Item
-  if (
-    text.includes('wrong item') ||
-    text.includes('incorrect') ||
-    text.includes('different item') ||
-    text.includes('received wrong') ||
-    text.includes('ordered') ||
-    text.includes('shipped me')
-  ) {
-    return {
-      category: 'Wrong Item',
-      subcategory: 'Fulfillment Error',
-      sentiment: 'Negative',
-      confidence: 0.97,
-      explanation: 'Warehouse fulfillment picking or packing SKU error.',
-    };
-  }
-
-  // Delivery
-  if (
-    text.includes('late') ||
-    text.includes('delay') ||
-    text.includes('shipping') ||
-    text.includes('courier') ||
-    text.includes('arrive') ||
-    text.includes('event') ||
-    text.includes('wedding')
-  ) {
-    return {
-      category: 'Delivery',
-      subcategory: 'Late Delivery',
-      sentiment: 'Negative',
-      confidence: 0.88,
-      explanation: 'Carrier transit delay led to missed customer delivery window.',
-    };
-  }
-
-  // Changed Mind
-  if (
-    text.includes('mind') ||
-    text.includes('need') ||
-    text.includes('wanted') ||
-    text.includes('impulse') ||
-    text.includes('another') ||
-    text.includes('decided')
-  ) {
-    return {
-      category: 'Changed Mind',
-      subcategory: 'Buyer Remorse',
-      sentiment: 'Neutral',
-      confidence: 0.9,
-      explanation: 'Customer voluntary return / changed preference without product defect.',
-    };
-  }
-
-  return {
-    category: 'Customer Preference',
-    subcategory: 'General Return',
-    sentiment: 'Neutral',
-    confidence: 0.75,
-    explanation: 'General customer preference return.',
-  };
+  return { category: 'Other', subcategory: 'Unclassified', sentiment: 'Neutral', confidence: 0.6, explanation: 'No matching rule.' };
 }
+
 
 export interface RootCauseDiagnosisParams {
   productName: string;

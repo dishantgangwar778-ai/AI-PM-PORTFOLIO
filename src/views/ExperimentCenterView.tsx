@@ -16,12 +16,52 @@ import {
   Calendar,
   Percent
 } from 'lucide-react';
-import { Experiment } from '../types';
+import { Experiment, getLiveExperimentsCount, getActiveExperimentsCount } from '../types';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 
-export const ExperimentCenterView: React.FC = () => {
-  const [experiments, setExperiments] = useState<Experiment[]>([]);
-  const [selectedId, setSelectedId] = useState<string>('exp-1042');
+interface ExperimentCenterViewProps {
+  experiments: Experiment[];
+  setExperiments: React.Dispatch<React.SetStateAction<Experiment[]>>;
+}
+
+const renderActionButton = (status: Experiment['status'], onAction: (action: string) => void) => {
+  const baseClasses = "px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center space-x-1.5 transition-colors border";
+  switch (status) {
+    case 'PROPOSED':
+      return (
+        <button onClick={() => onAction('START')} className={`${baseClasses} bg-blue-600 hover:bg-blue-700 text-white border-transparent`}>
+          <Play className="w-3.5 h-3.5 text-white" />
+          <span>Launch Experiment</span>
+        </button>
+      );
+    case 'RUNNING':
+      return (
+        <button onClick={() => onAction('PAUSE')} className={`${baseClasses} border-slate-300 hover:bg-slate-50 text-slate-700`}>
+          <Pause className="w-3.5 h-3.5 text-amber-600" />
+          <span>Pause</span>
+        </button>
+      );
+    case 'PAUSED':
+      return (
+        <button onClick={() => onAction('RESUME')} className={`${baseClasses} border-slate-300 hover:bg-slate-50 text-slate-700`}>
+          <Play className="w-3.5 h-3.5 text-emerald-600" />
+          <span>Resume</span>
+        </button>
+      );
+    case 'COMPLETED':
+      return (
+        <button onClick={() => onAction('VIEW_RESULTS')} className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center space-x-1.5 transition-colors hover:bg-slate-100 text-slate-600`}>
+          <BarChart3 className="w-3.5 h-3.5 text-blue-600" />
+          <span>View Results</span>
+        </button>
+      );
+    default:
+      return null;
+  }
+};
+
+export const ExperimentCenterView: React.FC<ExperimentCenterViewProps> = ({ experiments, setExperiments }) => {
+  const [selectedId, setSelectedId] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [showNewModal, setShowNewModal] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -32,30 +72,19 @@ export const ExperimentCenterView: React.FC = () => {
   const [newHypothesis, setNewHypothesis] = useState('');
   const [newDuration, setNewDuration] = useState(30);
 
-  const fetchExperiments = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/experiments');
-      if (res.ok) {
-        const data = await res.json();
-        setExperiments(data);
-        if (data.length > 0 && !selectedId) {
-          setSelectedId(data[0].id);
-        }
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchExperiments();
-  }, []);
+    if (experiments.length > 0 && !selectedId) {
+      setSelectedId(experiments[0].id);
+    }
+  }, [experiments, selectedId]);
 
   const handleToggleStatus = async (id: string, currentStatus: string) => {
-    const nextStatus = currentStatus === 'Live' ? 'Paused' : 'Live';
+    let nextStatus = '';
+    if (currentStatus === 'PROPOSED') nextStatus = 'RUNNING';
+    else if (currentStatus === 'RUNNING') nextStatus = 'PAUSED';
+    else if (currentStatus === 'PAUSED') nextStatus = 'RUNNING';
+    else return; // COMPLETED can't be toggled
+
     try {
       const res = await fetch(`/api/experiments/${id}`, {
         method: 'PATCH',
@@ -83,7 +112,7 @@ export const ExperimentCenterView: React.FC = () => {
         body: JSON.stringify({
           title: newTitle.trim(),
           description: newDesc.trim(),
-          status: 'Live',
+          status: 'PROPOSED',
           primaryMetric: 'Return Rate Reduction',
           secondaryMetrics: ['Conversion Rate', 'Customer NPS'],
           audience: 'Target Shoppers (50%)',
@@ -173,7 +202,7 @@ export const ExperimentCenterView: React.FC = () => {
           <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Active Experiments</span>
           <div className="mt-2 flex items-baseline justify-between">
             <span className="text-3xl font-black text-slate-900 font-mono">
-              {experiments.filter((e) => e.status === 'Live').length} Running
+              {getLiveExperimentsCount(experiments)} Running
             </span>
             <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full">
               Live Interventions
@@ -211,7 +240,7 @@ export const ExperimentCenterView: React.FC = () => {
         {/* Left: Experiment Selector List (4 cols) */}
         <div className="lg:col-span-4 space-y-3">
           <span className="text-xs font-bold uppercase tracking-wider text-slate-400 px-1">
-            Active Experiments ({experiments.length})
+            Active Experiments ({getActiveExperimentsCount(experiments)})
           </span>
 
           <div className="space-y-2">
@@ -237,9 +266,13 @@ export const ExperimentCenterView: React.FC = () => {
                     </span>
                     <span
                       className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
-                        exp.status === 'Live'
+                        exp.status === 'RUNNING'
                           ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                          : 'bg-amber-500/20 text-amber-300'
+                          : exp.status === 'PAUSED'
+                          ? 'bg-amber-500/20 text-amber-300'
+                          : exp.status === 'COMPLETED'
+                          ? 'bg-blue-500/20 text-blue-300'
+                          : 'bg-slate-500/20 text-slate-300'
                       }`}
                     >
                       {exp.status} • Day {exp.currentDay}/{exp.durationDays}
@@ -279,7 +312,12 @@ export const ExperimentCenterView: React.FC = () => {
                   <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-800">
                     {activeExp.code}
                   </span>
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                    activeExp.status === 'RUNNING' ? 'bg-emerald-100 text-emerald-800' :
+                    activeExp.status === 'PAUSED' ? 'bg-amber-100 text-amber-800' :
+                    activeExp.status === 'COMPLETED' ? 'bg-blue-100 text-blue-800' :
+                    'bg-slate-100 text-slate-800'
+                  }`}>
                     {activeExp.status}
                   </span>
                 </div>
@@ -290,22 +328,7 @@ export const ExperimentCenterView: React.FC = () => {
               </div>
 
               <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => handleToggleStatus(activeExp.id, activeExp.status)}
-                  className="px-3 py-1.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-xs font-semibold text-slate-700 flex items-center space-x-1.5 transition-colors"
-                >
-                  {activeExp.status === 'Live' ? (
-                    <>
-                      <Pause className="w-3.5 h-3.5 text-amber-600" />
-                      <span>Pause</span>
-                    </>
-                  ) : (
-                    <>
-                      <Play className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>Resume</span>
-                    </>
-                  )}
-                </button>
+                {renderActionButton(activeExp.status, () => handleToggleStatus(activeExp.id, activeExp.status))}
               </div>
             </div>
 

@@ -5,6 +5,7 @@ import { router as apiRouter } from './server/routes';
 
 async function startServer() {
   const app = express();
+  app.set('trust proxy', 1);
   const PORT = 3000;
 
   // Security Headers Middleware
@@ -17,8 +18,8 @@ async function startServer() {
   });
 
   // JSON Body Parser with high limit for dataset uploads
-  app.use(express.json({ limit: '50mb' }));
-  app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+  app.use(express.json({ limit: '10mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
   // API routes mounted FIRST
   app.use('/api', apiRouter);

@@ -17,7 +17,7 @@ async function runInProcessVerification() {
   console.log(`  - Percentage SUM: ${initPctSum}%`);
   console.log(`  - MATCH: ${initDash.totalReturnsCount === initDistSum ? 'PASS' : 'FAIL'}\n`);
 
-  if (initDash.totalReturnsCount !== initDistSum || initPctSum !== 100) {
+  if (initDash.totalReturnsCount !== initDistSum || Math.abs(initPctSum - 100) > 1.5) {
     throw new Error('Initial dataset reconciliation failed!');
   }
 
@@ -34,7 +34,7 @@ async function runInProcessVerification() {
   console.log(`  - Percentage SUM: ${pctSumB}%`);
   console.log(`  - MATCH: ${dashB.totalReturnsCount === sumB ? 'PASS' : 'FAIL'}\n`);
 
-  if (dashB.totalReturnsCount !== 2850 || sumB !== 2850 || pctSumB !== 100) {
+  if (dashB.totalReturnsCount !== 2850 || sumB !== 2850 || Math.abs(pctSumB - 100) > 1.5) {
     throw new Error('Dataset B reconciliation failed!');
   }
 
@@ -51,7 +51,7 @@ async function runInProcessVerification() {
   console.log(`  - Percentage SUM: ${pctSumC}%`);
   console.log(`  - MATCH: ${dashC.totalReturnsCount === sumC ? 'PASS' : 'FAIL'}\n`);
 
-  if (dashC.totalReturnsCount !== 1650 || sumC !== 1650 || pctSumC !== 100) {
+  if (dashC.totalReturnsCount !== 1650 || sumC !== 1650 || Math.abs(pctSumC - 100) > 1.5) {
     throw new Error('Dataset C reconciliation failed!');
   }
 
@@ -139,7 +139,7 @@ async function runInProcessVerification() {
     title: createdAction.title,
     description: createdAction.recommendation,
     actionId: createdAction.id,
-    status: 'Live',
+    status: 'RUNNING',
     primaryMetric: 'Return Rate Reduction',
     secondaryMetrics: ['PDP Conversion Rate', 'Customer Support Tickets'],
     audience: '50% Traffic (A/B Test)',

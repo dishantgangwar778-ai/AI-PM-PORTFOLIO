@@ -5,6 +5,8 @@ import { BottomNav } from './components/BottomNav';
 import { WorkspaceModal } from './components/WorkspaceModal';
 import { UploadStepper } from './components/UploadStepper';
 import { ExportModal } from './components/ExportModal';
+import { CookieConsent } from './components/CookieConsent';
+import { OnboardingWidget } from './components/OnboardingWidget';
 
 import { DashboardView } from './views/DashboardView';
 import { ProductDeepDiveView } from './views/ProductDeepDiveView';
@@ -14,7 +16,7 @@ import { ReturnsAnalysisView } from './views/ReturnsAnalysisView';
 import { EvaluationView } from './views/EvaluationView';
 import { SettingsView } from './views/SettingsView';
 
-import { Workspace, DashboardData, Product } from './types';
+import { Workspace, DashboardData, Product, Experiment } from './types';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<string>('dashboard');
@@ -30,6 +32,7 @@ export default function App() {
 
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
+  const [experiments, setExperiments] = useState<Experiment[]>([]);
   const [selectedSku, setSelectedSku] = useState<string>('SKU-104');
   const [initialReturnsCategory, setInitialReturnsCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -79,6 +82,18 @@ export default function App() {
     }
   };
 
+  const fetchExperiments = async () => {
+    try {
+      const res = await fetch('/api/experiments');
+      if (res.ok) {
+        const data = await res.json();
+        setExperiments(data);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const handleResetDemo = useCallback(async () => {
     try {
       await fetch('/api/dev/reset-demo', { method: 'POST' });
@@ -87,6 +102,7 @@ export default function App() {
     }
     await fetchDashboardData();
     await fetchProducts();
+    await fetchExperiments();
     setCurrentView('dashboard');
   }, []);
 
@@ -94,6 +110,7 @@ export default function App() {
     fetchWorkspaces();
     fetchDashboardData();
     fetchProducts();
+    fetchExperiments();
   }, []);
 
   // Global escape key handler to close active modals
@@ -123,7 +140,8 @@ export default function App() {
     setCurrentView('returns');
   };
 
-  const handleConvertToExperiment = (actionId: string) => {
+  const handleConvertToExperiment = async (actionId?: string) => {
+    await fetchExperiments();
     setCurrentView('experiments');
   };
 
@@ -163,6 +181,7 @@ export default function App() {
           onViewChange={setCurrentView}
           onOpenUploadWizard={() => setIsUploadStepperOpen(true)}
           totalReturnsCount={dashboardData?.totalReturnsCount}
+          experiments={experiments}
         />
 
         {/* Dynamic Main View */}
@@ -197,11 +216,11 @@ export default function App() {
           {currentView === 'actions' && (
             <ActionCenterView
               onConvertToExperiment={handleConvertToExperiment}
-              onNavigateToExperiments={() => setCurrentView('experiments')}
+              onNavigateToExperiments={handleConvertToExperiment}
             />
           )}
 
-          {currentView === 'experiments' && <ExperimentCenterView />}
+          {currentView === 'experiments' && <ExperimentCenterView experiments={experiments} setExperiments={setExperiments} />}
 
           {currentView === 'returns' && (
             <ReturnsAnalysisView
@@ -248,6 +267,10 @@ export default function App() {
       />
 
       <ExportModal isOpen={isExportModalOpen} onClose={() => setIsExportModalOpen(false)} dashboardData={dashboardData} />
+      <CookieConsent />
+
+      <OnboardingWidget setCurrentView={setCurrentView} setIsUploadStepperOpen={setIsUploadStepperOpen} />
+
     </div>
   );
 }
