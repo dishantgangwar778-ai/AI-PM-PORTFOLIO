@@ -46,6 +46,31 @@ export const PresetDatasetSchema = z.object({
   presetKey: z.enum(['dataset-a', 'dataset-b', 'dataset-c']),
 });
 
+export const sanitizeSqlAndPrompt = (val: string) => {
+  if (!val) return val;
+  return val
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<[^>]+>/g, '')
+    .replace(/ignore previous instructions/gi, "[REDACTED]")
+    .replace(/ignore all instructions/gi, "[REDACTED]")
+    .replace(/system prompt/gi, "[REDACTED]")
+    .replace(/reveal secret/gi, "[REDACTED]")
+    .replace(/you are now/gi, "[REDACTED]");
+};
+const secureField = z.string().trim().max(5000).transform(sanitizeSqlAndPrompt);
+
+
+export const IngestSchema = z.object({
+  customer_comment: secureField.optional(),
+  reason: secureField.optional(),
+  sku: secureField.optional(),
+  product_category: secureField.optional(),
+}).passthrough();
+
+export const IngestBatchSchema = z.object({
+  rows: z.array(IngestSchema).min(1).max(50000),
+});
+
 export const UploadDatasetSchema = z.object({
   name: z.string().trim().max(200).optional(),
   fileName: z.string().trim().max(255).optional(),

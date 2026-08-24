@@ -206,7 +206,14 @@ export function ruleBasedClassify(reason: string, comment: string = ''): Classif
   }
 
   // LEVEL 4: COLOR & CUSTOMER PREFERENCE
-  const level4Keywords = ["changed mind", "buyer remorse", "color looks different", "style doesn't suit", "color", "colour", "shade", "not for me", "did not work", "picture", "photo", "different"];
+  const level4Keywords = [
+    "changed mind", "buyer remorse", "color looks different", "style doesn't suit", 
+    "color", "colour", "shade", "not for me", "did not work", "picture", "photo", 
+    "different", "green", "blue", "red", "black", "white", "yellow", "orange", 
+    "pink", "purple", "brown", "grey", "gray", "silver", "gold", "beige", "tan", 
+    "navy", "olive", "teal", "maroon", "emerald", "cyan", "received bright", 
+    "expected", "look different", "matches", "mismatch"
+  ];
   if (level4Keywords.some(kw => text.includes(kw))) {
     return { category: 'Color', subcategory: 'Customer Preference', sentiment: 'Neutral', confidence: 0.85, explanation: 'General subjective customer preference or color mismatch.' };
   }

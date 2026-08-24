@@ -17,9 +17,10 @@ export function CookieConsent() {
   const initializePostHog = () => {
     // Check if PostHog is already initialized to avoid warnings
     if (!posthog.__loaded) {
-      const phKey = import.meta.env.VITE_POSTHOG_KEY || 'phc_dummy_key_for_demo';
+      const meta = import.meta as any;
+      const phKey = meta.env?.VITE_POSTHOG_KEY || 'phc_dummy_key_for_demo';
       posthog.init(phKey, {
-        api_host: import.meta.env.VITE_POSTHOG_HOST || 'https://app.posthog.com',
+        api_host: meta.env?.VITE_POSTHOG_HOST || 'https://app.posthog.com',
         autocapture: false, // Privacy first, explicit capture
         persistence: 'localStorage+cookie',
       });
