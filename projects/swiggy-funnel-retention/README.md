@@ -2,6 +2,10 @@
 
 > Independent Associate Product Manager portfolio case study using **synthetic data** for January–June 2025. These are **not Swiggy internal metrics**. Quick Reorder is a proposed product concept; no live experiment has been run.
 
+## Live dashboard
+
+- **[Open the interactive dashboard](https://dishantgangwar778-ai.github.io/AI-PM-PORTFOLIO/)** — hosted with GitHub Pages. If the page does not load immediately after deployment, wait a minute and refresh.
+
 ## Presentation
 
 - **[View the PowerPoint deck online](https://view.officeapps.live.com/op/view.aspx?src=https%3A%2F%2Fraw.githubusercontent.com%2Fdishantgangwar778-ai%2FAI-PM-PORTFOLIO%2Frefs%2Fheads%2Fmain%2Fprojects%2Fswiggy-funnel-retention%2FSwiggy_Funnel_Retention_APM_Portfolio_Deck.pptx&wdOrigin=BROWSELINK)** — Microsoft Office web viewer.
