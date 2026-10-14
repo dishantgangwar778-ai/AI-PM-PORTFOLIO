@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Food Delivery Funnel & Retention — Portfolio Dashboard</title>
+<style>
+body{font:16px Arial,sans-serif;background:#f5f7fb;color:#182230;margin:24px}
+header,.card,.panel{background:#fff;border:1px solid #e1e7ef;border-radius:16px;padding:20px;margin-bottom:14px}
+.tag{display:inline-block;background:#fff0d1;color:#805500;padding:6px 10px;border-radius:20px;font-size:12px;font-weight:bold}
+h1{margin:12px 0 6px}.note,.sub{color:#657286;font-size:13px;line-height:1.5}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px}
+.label{font-size:13px;color:#657286}.value{font-size:30px;font-weight:bold;margin:8px 0}
+.stage{display:grid;grid-template-columns:140px 1fr 70px;gap:12px;align-items:center;margin:14px 0;font-size:13px}
+.track{height:16px;background:#edf0f6;border-radius:8px;overflow:hidden}.bar{height:100%;background:#6b5ce7}
+table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:10px;border-bottom:1px solid #edf0f5}
+@media(max-width:520px){body{margin:10px}.stage{grid-template-columns:100px 1fr 55px}}
+</style></head><body>
+<header><span class="tag">SYNTHETIC DATA · PORTFOLIO PROJECT</span>
+<h1>Food Delivery Funnel & Retention</h1>
+<p class="note">Analysis window: January 1–June 30, 2025. Independent portfolio analysis using synthetic data, not Swiggy internal data. Confirm values against final SQL outputs before publication.</p></header>
+<div class="grid">
+<div class="card"><div class="label">App-open sessions</div><div class="value">12,000</div><div class="sub">Funnel entry</div></div>
+<div class="card"><div class="label">Order-placed sessions</div><div class="value">2,559</div><div class="sub">Funnel endpoint</div></div>
+<div class="card"><div class="label">Open → order conversion</div><div class="value">21.33%</div><div class="sub">2,559 / 12,000</div></div>
+<div class="card"><div class="label">7-day repeat delivered rate</div><div class="value">5.00%</div><div class="sub">78 / 1,561 eligible</div></div>
+</div>
+<section class="panel"><h2>Conversion funnel</h2>
+<div class="stage"><b>App open</b><div class="track"><div class="bar" style="width:100%"></div></div><b>12,000</b></div>
+<div class="stage"><b>Restaurant view</b><div class="track"><div class="bar" style="width:74.84%"></div></div><b>8,981</b></div>
+<div class="stage"><b>Add-to-cart</b><div class="track"><div class="bar" style="width:40.83%"></div></div><b>4,900</b></div>
+<div class="stage"><b>Checkout</b><div class="track"><div class="bar" style="width:28.77%"></div></div><b>3,452</b></div>
+<div class="stage"><b>Order placed</b><div class="track"><div class="bar" style="width:21.33%"></div></div><b>2,559</b></div>
+<p class="note">Largest step drop-off: restaurant view → add-to-cart (45.44%). This identifies where to investigate; it does not prove why users leave.</p></section>
+<section class="panel"><h2>Repeat ordering & order outcomes</h2>
+<table><thead><tr><th>Metric</th><th>Value</th><th>Definition</th></tr></thead><tbody>
+<tr><td>Customers with ≥1 order</td><td>1,983</td><td>Analysis period</td></tr>
+<tr><td>Exactly one order</td><td>1,511 (76.20%)</td><td>Ordering customers</td></tr>
+<tr><td>Exactly two orders</td><td>387 (19.52%)</td><td>Ordering customers</td></tr>
+<tr><td>Three or more orders</td><td>85 (4.29%)</td><td>Ordering customers</td></tr>
+<tr><td>Second delivered order within 7 days</td><td>78 / 1,561 (5.00%)</td><td>Complete follow-up cohort</td></tr>
+<tr><td>Delivered orders</td><td>2,296</td><td>Of 2,559 placed orders</td></tr>
+<tr><td>Cancelled orders</td><td>263 (10.28%)</td><td>Of 2,559 placed orders</td></tr>
+</tbody></table></section>
+<section class="panel"><h2>Product opportunity</h2>
+<p><b>Quick Reorder hypothesis:</b> A reviewable reorder card may shorten the path to a second order. Revalidate item availability, current prices, taxes/fees, address and serviceability, and retain standard checkout/payment confirmation.</p>
+<p><b>Experiment status:</b> Proposed only; no live A/B test or treatment effect has been observed. A 5% → 7% target is illustrative, not a forecast.</p></section>
+<p class="note">Independent portfolio project. Synthetic data; not Swiggy production metrics. Descriptive analysis does not establish causality.</p>
+</body></html>
