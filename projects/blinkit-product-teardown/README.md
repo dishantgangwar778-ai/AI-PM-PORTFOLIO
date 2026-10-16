@@ -4,6 +4,10 @@
 **Portfolio area:** Product Strategy / Associate Product Manager  
 **Artifact:** 10-page teardown originally prepared as a PDF
 
+[![View Teardown](https://img.shields.io/badge/View-Teardown-16a34a?style=for-the-badge)](./Blinkit_Product_Teardown_10_Pages.pdf)
+
+**View the 10-page PDF:** [Blinkit Product Teardown](./Blinkit_Product_Teardown_10_Pages.pdf)
+
 > This is an analysis of Blinkit's existing product experience, not a redesign. Product observations are distinguished from PM synthesis and hypotheses. Opportunities and outcomes below are proposals to validate, not proven impact.
 
 ## Overview
