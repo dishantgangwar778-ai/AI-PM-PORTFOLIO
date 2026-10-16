@@ -7,6 +7,17 @@
 
 > ReturnIQ transforms unstructured customer return feedback into structured root-cause intelligence, connects defect patterns to financial loss, and tracks mitigation experiments to help protect e-commerce margins.
 
+## Quick links — view the project evidence
+
+| Resource | Open |
+|---|---|
+| Live application | [**View Live Demo**](https://returniq-527158472417.asia-southeast1.run.app) |
+| Technical evaluation evidence | [**View PDF**](./assets/ReturnIQ_Technical_Evaluation_Evidence.pdf) |
+| Golden evaluation dataset (100 examples) | [**View CSV**](./datasets/ReturnIQ_Golden_Evaluation_100.csv) |
+| Returns export sample | [**View Returns CSV**](./datasets/returniq-returns-export-2026-08-31.csv) |
+| Golden evaluation report | [**View Excel Report (XLSX)**](./datasets/ReturnIQ_Golden_Evaluation_Report.xlsx) |
+| Golden-set confusion matrix | [**View PNG**](./assets/returniq_golden_confusion_matrix.png) |
+
 ## Overview
 ReturnIQ is an AI-powered returns intelligence portfolio project. It classifies customer return comments, surfaces recurring product and supplier issues, prioritizes potential interventions by estimated weekly financial impact, and supports human review of low-confidence predictions.
 
@@ -19,20 +30,36 @@ ReturnIQ is an AI-powered returns intelligence portfolio project. It classifies 
 - **Structured export:** Supports a schema-oriented returns data export.
 
 ## Screenshots
+
 ### Executive dashboard
+[**View dashboard screenshot (PNG)**](./assets/dashboard_overview.png)
+
 ![Executive dashboard](./assets/dashboard_overview.png)
 
 ### Returns analysis
+[**View returns analysis screenshot (PNG)**](./assets/returns_analysis.png)
+
 ![Returns analysis](./assets/returns_analysis.png)
 
 ### Action Center
+[**View Action Center screenshot (PNG)**](./assets/action_center.png)
+
 ![Action Center](./assets/action_center.png)
 
 ### Experiment Center
+[**View Experiment Center screenshot (PNG)**](./assets/experiment_center.png)
+
 ![Experiment Center](./assets/experiment_center.png)
 
 ### AI evaluation
+[**View AI benchmark screenshot (PNG)**](./assets/ai_benchmark.png)
+
 ![AI evaluation](./assets/ai_benchmark.png)
+
+### Confusion matrix
+[**View confusion matrix screenshot (PNG)**](./assets/returniq_golden_confusion_matrix.png)
+
+![Golden-set confusion matrix](./assets/returniq_golden_confusion_matrix.png)
 
 ## Evaluation snapshot
 The supplied project materials report:
@@ -52,6 +79,9 @@ These are project-reported evaluation figures; see the accompanying dataset and 
 - [Product roadmap](./docs/ROADMAP.md)
 - [Architecture decisions](./docs/DECISIONS.md)
 - [Technical evaluation evidence PDF](./assets/ReturnIQ_Technical_Evaluation_Evidence.pdf)
+- [Golden evaluation CSV](./datasets/ReturnIQ_Golden_Evaluation_100.csv)
+- [Golden evaluation Excel report](./datasets/ReturnIQ_Golden_Evaluation_Report.xlsx)
+- [Returns export CSV](./datasets/returniq-returns-export-2026-08-31.csv)
 
 ## Run locally
 Prerequisites: Node.js 18+ and Python 3.10+ for the evaluation script.
