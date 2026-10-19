@@ -106,3 +106,27 @@ https://returniq-527158472417.asia-southeast1.run.app
 
 ## Author
 Dishant Kumar — AI Product Management & AI Engineering
+
+
+## Frontend source (portfolio preview)
+
+A React + TypeScript + Vite dashboard preview is included in `src/`. It demonstrates a returns-intelligence workspace, illustrative KPI cards, root-cause categories, searchable sample return records, and a local review-state interaction.
+
+**Data and deployment boundary:** This preview uses hard-coded illustrative sample records and local UI state. It is not connected to the live Cloud Run application, a production database, or live model inference. The existing Cloud Run URL is linked above as a separate live demo; this repository preview should not be treated as the deployed app's exact source.
+
+### Run the frontend locally
+
+Requires Node.js 20 or newer.
+
+```bash
+npm install
+npm run dev
+```
+
+Run a production TypeScript/Vite build:
+
+```bash
+npm run build
+```
+
+The repository currently does not include `package-lock.json`; dependency versions are therefore not locked by npm's lockfile.
