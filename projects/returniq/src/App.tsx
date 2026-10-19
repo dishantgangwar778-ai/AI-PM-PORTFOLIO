@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import {
   Activity, AlertTriangle, ArrowDownRight, ArrowUpRight, BarChart3,
-  Bell, CheckCircle2, ChevronDown, CircleHelp, Download, Filter,
+  Bell, CheckCircle2, ChevronDown, HelpCircle, Download, Filter,
   LayoutDashboard, Lightbulb, Package, Search, Settings, ShieldCheck,
   ShoppingBag, Sparkles, Users, Workflow
 } from "lucide-react";
@@ -61,7 +61,7 @@ function App() {
           ))}
         </nav>
         <div className="sidebar-bottom">
-          <div className="help-card"><CircleHelp size={18} /><div><strong>Need a hand?</strong><span>Explore the product guide</span></div></div>
+          <div className="help-card"><HelpCircle size={18} /><div><strong>Need a hand?</strong><span>Explore the product guide</span></div></div>
           <button className="nav-item"><Settings size={18} /><span>Settings</span></button>
           <div className="user-profile"><div className="avatar">DK</div><div className="user-meta"><strong>Product workspace</strong><span>Portfolio demo</span></div><ChevronDown size={16} /></div>
         </div>
