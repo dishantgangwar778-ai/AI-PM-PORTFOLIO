@@ -74,6 +74,6 @@ jobs:
             echo "package-lock.json already exists; no auto-commit needed."
           fi
       - name: Install frontend dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
       - name: Build and type-check frontend
         run: npm run build
