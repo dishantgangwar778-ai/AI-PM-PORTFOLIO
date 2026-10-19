@@ -40,37 +40,40 @@ jobs:
     name: Frontend Build & TypeScript Check
     runs-on: ubuntu-latest
     needs: python-benchmarks
+    permissions:
+      contents: write
     defaults:
       run:
         working-directory: projects/returniq
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-      - name: Check frontend source and package manifest
-        id: frontend
-        shell: bash
-        run: |
-          if [ -d "src" ] && [ -f "package.json" ] && [ -f "index.html" ] && [ -f "vite.config.ts" ] && [ -f "tsconfig.json" ]; then
-            echo "ready=true" >> "$GITHUB_OUTPUT"
-            echo "Frontend source and build configuration found."
-          else
-            echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "Frontend build cannot run because required source/configuration files are missing."
-          fi
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true
       - name: Set up Node.js
-        if: steps.frontend.outputs.ready == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - name: Install frontend dependencies
-        if: steps.frontend.outputs.ready == 'true'
+      - name: Generate and commit package-lock.json if missing
+        shell: bash
         run: |
-          if [ -f package-lock.json ]; then
-            npm ci
+          if [ ! -f package-lock.json ]; then
+            echo "package-lock.json is missing; generating it from package.json."
+            npm install --package-lock-only --legacy-peer-deps
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add package-lock.json
+            if git diff --cached --quiet; then
+              echo "No lockfile changes to commit."
+            else
+              git commit -m "chore(deps): auto-generate ReturnIQ package lockfile"
+              git push origin HEAD:main
+            fi
           else
-            echo "package-lock.json is not committed yet; using npm install with legacy peer dependency resolution."
-            npm install --legacy-peer-deps
+            echo "package-lock.json already exists; no auto-commit needed."
           fi
+      - name: Install frontend dependencies
+        run: npm ci
       - name: Build and type-check frontend
-        if: steps.frontend.outputs.ready == 'true'
         run: npm run build
