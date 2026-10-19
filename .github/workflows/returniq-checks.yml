@@ -64,7 +64,13 @@ jobs:
           node-version: "20"
       - name: Install frontend dependencies
         if: steps.frontend.outputs.ready == 'true'
-        run: npm install
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            echo "package-lock.json is not committed yet; using npm install with legacy peer dependency resolution."
+            npm install --legacy-peer-deps
+          fi
       - name: Build and type-check frontend
         if: steps.frontend.outputs.ready == 'true'
         run: npm run build
