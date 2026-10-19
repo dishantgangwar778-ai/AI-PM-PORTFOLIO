@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import {
   Activity, AlertTriangle, ArrowDownRight, ArrowUpRight, BarChart3,
   Bell, CheckCircle2, ChevronDown, CircleHelp, Download, Filter,
@@ -139,7 +140,7 @@ function App() {
   );
 }
 
-function MetricCard({ label, value, change, icon, up, down, warning }: { label: string; value: string; change: string; icon: React.ReactNode; up?: boolean; down?: boolean; warning?: boolean }) {
+function MetricCard({ label, value, change, icon, up, down, warning }: { label: string; value: string; change: string; icon: ReactNode; up?: boolean; down?: boolean; warning?: boolean }) {
   return <article className="metric-card"><div className="metric-top"><span>{label}</span><div className={`metric-icon ${warning ? "warn" : ""}`}>{icon}</div></div><div className="metric-value">{value}</div><div className={`metric-change ${warning ? "warning-text" : down ? "positive" : up ? "positive" : ""}`}>{down ? <ArrowDownRight size={14} /> : up ? <ArrowUpRight size={14} /> : warning ? <AlertTriangle size={14} /> : <Activity size={14} />}{change}</div></article>;
 }
 
