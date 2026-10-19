@@ -1,0 +1,32 @@
+name: ReturnIQ artifact checks
+
+on:
+  push:
+    paths:
+      - "projects/returniq/**"
+      - ".github/workflows/returniq-checks.yml"
+  pull_request:
+    paths:
+      - "projects/returniq/**"
+      - ".github/workflows/returniq-checks.yml"
+  workflow_dispatch:
+
+jobs:
+  artifact-checks:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: projects/returniq
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run deterministic artifact regression checks
+        run: python scripts/run_regression_tests.py
+      - name: Evaluate saved golden-set predictions
+        run: python scripts/evaluate_golden_set.py
+      - name: Verify EXP-1041 arithmetic
+        run: python scripts/verify_experiment_calc.py
