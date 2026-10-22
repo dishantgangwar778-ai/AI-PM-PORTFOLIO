@@ -21,6 +21,12 @@ The project dossier reports 95.0% accuracy and 0.952 Macro F1 on a 100-record go
 
 The EXP-1041 cohort counts are documented as a **synthetic simulation**. The reported -10.7% relative delta is a calculation from those counts, not verified live-customer impact. See the [experiment notes](./projects/returniq/docs/EXPERIMENT_EXP_1041.md).
 
+## MakeMyTrip AI Trip Assistant
+
+A product case study for an AI-assisted travel-planning experience, covering the user problem, proposed workflow, MVP scope, prioritization, success metrics, experiment plan, risks, and validation roadmap. This is a portfolio concept, not an official MakeMyTrip feature or a claim of verified business impact.
+
+- **[Read the MakeMyTrip AI Trip Assistant case study](./projects/mmt-ai-trip-assistant/CASE_STUDY.md)**
+
 ## Explore
 
 Browse the `projects/` directory for additional product case studies and artifacts.
