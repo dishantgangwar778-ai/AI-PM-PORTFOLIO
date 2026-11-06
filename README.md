@@ -27,6 +27,11 @@ A product case study for an AI-assisted travel-planning experience, covering the
 
 - **[Read the MakeMyTrip AI Trip Assistant case study](./projects/mmt-ai-trip-assistant/CASE_STUDY.md)**
 
+## Product strategy case studies
+
+- **[HireMate — AI Mock Interview Platform](./projects/hiremate/CASE_STUDY.md)** — product thesis, target users, MVP, pricing hypothesis, GTM plan and success metrics.
+- **[MakeMyTrip Flight Booking — Product Teardown](./projects/mmt-flight-booking-teardown/CASE_STUDY.md)** — booking journey analysis, decision-friction hypothesis, explainable Best Match concept, trust edge cases and experiment proposal.
+
 ## Explore
 
 Browse the `projects/` directory for additional product case studies and artifacts.
