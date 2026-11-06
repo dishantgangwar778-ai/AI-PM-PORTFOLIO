@@ -1,5 +1,6 @@
 # HireMate — AI Mock Interview Platform
 
+> **[VIEW PDF — HireMate AI Product Case Study](./HireMate_AI_Product_Case_Study_Recruiter_Ready.pdf)**  
 > Product strategy and launch case study · June 2026  
 > **Status:** Portfolio capstone / product concept. Growth figures and KPI values below are proposed targets, not achieved results.
 
