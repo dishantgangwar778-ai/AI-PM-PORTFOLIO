@@ -1,5 +1,6 @@
 # MakeMyTrip Flight Booking — Product Teardown
 
+> **[VIEW PDF — MakeMyTrip Flight Booking Teardown](./MakeMyTrip_Flight_Booking_Teardown_3_12_Pages.pdf)**  
 > Independent product teardown and proposed decision-support concept  
 > **Important:** This is an independent portfolio analysis, not an official MakeMyTrip product or feature. The proposed recommendation logic is illustrative, and no live A/B test has been conducted.
 
